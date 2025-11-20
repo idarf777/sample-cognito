@@ -1,0 +1,20 @@
+{
+  "name": "backend-sample-cognito",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun --hot index.ts",
+    "build": "bun build index.ts --outdir dist",
+    "start": "bun index.ts"
+  },
+  "dependencies": {
+    "@trpc/server": "^11.7.1",
+    "aws-amplify": "^6.15.8",
+    "superjson": "^2.2.5",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  }
+}

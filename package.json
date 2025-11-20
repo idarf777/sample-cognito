@@ -1,0 +1,24 @@
+{
+  "name": "sample-cognite",
+  "private": true,
+  "workspaces": [
+    "packages/frontend-sample-cognito",
+    "packages/backend-sample-cognito",
+    "packages/shared-types"
+  ],
+  "scripts": {
+    "dev:frontend": "bun --filter frontend-sample-cognito dev",
+    "dev:backend": "bun --filter backend-sample-cognito dev",
+    "dev": "bun --filter frontend-sample-cognito dev & bun --filter backend-sample-cognito dev",
+    "build:frontend": "bun --filter frontend-sample-cognito build",
+    "build:backend": "bun --filter backend-sample-cognito build",
+    "build": "bun run build:frontend && bun run build:backend"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/node": "^24.10.1"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}

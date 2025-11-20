@@ -1,0 +1,19 @@
+{
+  "name": "frontend-sample-cognito",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun --hot index.ts",
+    "build": "bun build index.html",
+    "start": "bun index.ts"
+  },
+  "dependencies": {
+    "@trpc/client": "^11.7.1",
+    "superjson": "^2.2.5",
+    "shared-types": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  }
+}
