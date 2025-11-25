@@ -2,6 +2,10 @@ import indexHtml from "./index.html";
 
 const server = Bun.serve({
   port: 3000,
+  //tls: {
+  //  key: Bun.file('./certs/key.pem'),
+  //  cert: Bun.file('./certs/cert.pem'),
+  //},
   routes: {
     "/": indexHtml,
   },
@@ -11,4 +15,4 @@ const server = Bun.serve({
   }
 });
 
-console.log(`🚀 Frontend server running at http://localhost:${server.port}`);
+console.log(`🚀 Frontend server running at https://localhost:${server.port}`);

@@ -7,12 +7,16 @@ configureAmplifyServer();
 
 const server = Bun.serve({
   port: 3001,
+  //tls: {
+  //  key: Bun.file('./certs/key.pem'),
+  //  cert: Bun.file('./certs/cert.pem'),
+  //},
   async fetch(request) {
     // CORS headers
     if (request.method === 'OPTIONS') {
       return new Response(null, {
         headers: {
-          'Access-Control-Allow-Origin': 'http://localhost:3000',
+          'Access-Control-Allow-Origin': process.env.WEB_SERVICE_URL || 'http://localhost:3000',
           'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
           'Access-Control-Allow-Headers': 'Content-Type',
         },
@@ -29,7 +33,7 @@ const server = Bun.serve({
       }).then(response => {
         // Add CORS headers to response
         const headers = new Headers(response.headers);
-        headers.set('Access-Control-Allow-Origin', 'http://localhost:3000');
+        headers.set('Access-Control-Allow-Origin', process.env.WEB_SERVICE_URL || 'http://localhost:3000');
         headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
         headers.set('Access-Control-Allow-Headers', 'Content-Type');
 
@@ -45,4 +49,5 @@ const server = Bun.serve({
   },
 });
 
+//console.log(`🚀 Backend API server running at https://localhost:${server.port}`);
 console.log(`🚀 Backend API server running at http://localhost:${server.port}`);
