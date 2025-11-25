@@ -3,7 +3,7 @@ import { Amplify } from 'aws-amplify';
 
 // サーバーサイドでAmplifyを設定
 export function configureAmplifyServer() {
-  Amplify.configure({
+  const config: any = {
     Auth: {
       Cognito: {
         userPoolId: process.env.COGNITO_USER_POOL_ID || '',
@@ -20,7 +20,14 @@ export function configureAmplifyServer() {
         }
       }
     }
-  });
+  };
+
+  // サーバーサイド認証の場合はClient Secretを追加
+  if (process.env.COGNITO_CLIENT_SECRET) {
+    config.Auth.Cognito.userPoolClientSecret = process.env.COGNITO_CLIENT_SECRET;
+  }
+
+  Amplify.configure(config);
 }
 
 export class AmplifyAuthService {
@@ -41,7 +48,17 @@ export class AmplifyAuthService {
       const identityProvider = providerMap[provider] || provider;
 
       // 指定されたプロバイダーでOAuth認証
-      const redirectUrl = `https://${domain}/oauth2/authorize?identity_provider=${identityProvider}&client_id=${clientId}&response_type=code&scope=openid+email+profile&redirect_uri=${encodeURIComponent(redirectUri)}`;
+      // 必須パラメータ: client_id, redirect_uri, response_type, scope
+      const params = new URLSearchParams({
+        identity_provider: identityProvider,
+        client_id: clientId,
+        response_type: 'code',
+        scope: 'openid email profile',
+        redirect_uri: redirectUri
+      });
+
+      const redirectUrl = `https://${domain}/oauth2/authorize?${params.toString()}`;
+      console.log(`Redirecting to: ${redirectUrl}`);
 
       return { redirectUrl };
     } catch (error) {
