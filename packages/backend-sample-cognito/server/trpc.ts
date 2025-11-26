@@ -1,7 +1,12 @@
 import { initTRPC } from '@trpc/server';
 import superjson from 'superjson';
 
-export const t = initTRPC.create({
+interface Context {
+  request?: Request;
+  setCookie?: (name: string, value: string, options?: any) => void;
+}
+
+export const t = initTRPC.context<Context>().create({
   transformer: superjson,
 });
 

@@ -29,13 +29,14 @@ const server = Bun.serve({
         endpoint: '/trpc',
         req: request,
         router: appRouter,
-        createContext: () => ({}),
+        createContext: () => ({ request }),
       }).then(response => {
         // Add CORS headers to response
         const headers = new Headers(response.headers);
         headers.set('Access-Control-Allow-Origin', process.env.WEB_SERVICE_URL || 'http://localhost:3000');
         headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
         headers.set('Access-Control-Allow-Headers', 'Content-Type');
+        headers.set('Access-Control-Allow-Credentials', 'true');
 
         return new Response(response.body, {
           status: response.status,

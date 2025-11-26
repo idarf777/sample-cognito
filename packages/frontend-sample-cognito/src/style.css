@@ -99,6 +99,22 @@ body {
   background: #00b900;
 }
 
+.amazon-btn {
+  background: #30c706ff;
+}
+
+.amazon-btn:hover {
+  background: #72b900ff;
+}
+
+.mail-btn {
+  background: #ff9900;
+}
+
+.mail-btn:hover {
+  background: #cc7a00;
+}
+
 /* 区切り線のスタイル */
 .divider {
   display: flex;

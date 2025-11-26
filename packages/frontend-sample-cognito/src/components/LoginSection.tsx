@@ -1,32 +1,10 @@
-﻿import { useState } from 'react';
-import type { FormEvent } from 'react';
+﻿import type { AuthProvider } from "shared-types";
 
 interface LoginSectionProps {
-  onLoginWithProvider: (provider: 'Google' | 'Facebook' | 'LINE') => void;
-  onSendMagicLink: (email: string) => Promise<{ success: boolean; message: string }>;
+  onLoginWithProvider: (provider: AuthProvider) => void;
 }
 
-function LoginSection({ onLoginWithProvider, onSendMagicLink }: LoginSectionProps) {
-  const [email, setEmail] = useState('');
-  const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
-
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setMessage(null);
-
-    if (!email.trim()) {
-      setMessage({ text: 'メールアドレスを入力してください', type: 'error' });
-      return;
-    }
-
-    const result = await onSendMagicLink(email);
-    setMessage({ text: result.message, type: result.success ? 'success' : 'error' });
-
-    if (result.success) {
-      setEmail('');
-    }
-  };
-
+function LoginSection({ onLoginWithProvider }: LoginSectionProps) {
   return (
     <div id="login-section">
       <h1>AWS Amplify Authentication</h1>
@@ -52,35 +30,25 @@ function LoginSection({ onLoginWithProvider, onSendMagicLink }: LoginSectionProp
           className="social-btn line-btn"
           onClick={() => onLoginWithProvider('LINE')}
         >
-          <span className="btn-icon">LINE</span>
+          <span className="btn-icon">L</span>
           LINEでサインイン
         </button>
-      </div>
-
-      <div className="divider">
-        <span>または</span>
-      </div>
-
-      <div className="magic-link-section">
-        <h3>メールアドレスでサインイン</h3>
-        <form id="magic-link-form" onSubmit={handleSubmit}>
-          <input
-            type="email"
-            id="magic-link-email"
-            placeholder="メールアドレスを入力"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-          <button type="submit" className="magic-link-btn">
-            サインインリンクを送信
-          </button>
-        </form>
-        {message && (
-          <div id="magic-link-message" className={message.type}>
-            {message.text}
-          </div>
-        )}
+        <button
+          id="login-amazon-btn"
+          className="social-btn amazon-btn"
+          onClick={() => onLoginWithProvider('LoginWithAmazon')}
+        >
+          <span className="btn-icon">A</span>
+          Amazonでサインイン
+        </button>
+        <button
+          id="login-mail-btn"
+          className="social-btn mail-btn"
+          onClick={() => onLoginWithProvider('COGNITO')}
+        >
+          <span className="btn-icon">M</span>
+          メールアドレスでサインイン
+        </button>
       </div>
     </div>
   );
