@@ -69,6 +69,7 @@ bun install
 1. User Pool > **App integration**タブ
 2. **Create app client**
 3. 以下を設定:
+   - **App client type**: single page application (SPA)
    - **App client name**: frontend-sample-cognito
    - **Authentication flows**:
      - ☑ ALLOW_REFRESH_TOKEN_AUTH
