@@ -1,9 +1,5 @@
 import { fetchRequestHandler } from '@trpc/server/adapters/fetch';
 import { appRouter } from './server/router';
-import { configureAmplifyServer } from './server/auth-service';
-
-// Amplifyの設定を初期化
-configureAmplifyServer();
 
 const server = Bun.serve({
   port: 3001,
@@ -18,7 +14,8 @@ const server = Bun.serve({
         headers: {
           'Access-Control-Allow-Origin': process.env.WEB_SERVICE_URL || 'http://localhost:3000',
           'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+          'Access-Control-Allow-Credentials': 'true',
         },
       });
     }
@@ -29,13 +26,16 @@ const server = Bun.serve({
         endpoint: '/trpc',
         req: request,
         router: appRouter,
-        createContext: () => ({ request }),
+        createContext: () => ({ 
+          request,
+          authHeader: request.headers.get('authorization'),
+        }),
       }).then(response => {
         // Add CORS headers to response
         const headers = new Headers(response.headers);
         headers.set('Access-Control-Allow-Origin', process.env.WEB_SERVICE_URL || 'http://localhost:3000');
         headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-        headers.set('Access-Control-Allow-Headers', 'Content-Type');
+        headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
         headers.set('Access-Control-Allow-Credentials', 'true');
 
         return new Response(response.body, {

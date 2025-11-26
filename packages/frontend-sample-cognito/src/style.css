@@ -75,11 +75,11 @@ body {
   border-radius: 4px;
 }
 
-.google-btn {
+.signin-btn {
   background: #4285f4;
 }
 
-.google-btn:hover {
+.signin-btn:hover {
   background: #357ae8;
 }
 

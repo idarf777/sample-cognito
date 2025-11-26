@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@trpc/client": "^11.7.1",
+    "aws-amplify": "^6.15.8",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "shared-types": "workspace:*",
