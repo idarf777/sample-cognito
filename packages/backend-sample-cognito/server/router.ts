@@ -6,6 +6,7 @@ const authService = new AmplifyAuthService();
 
 export const appRouter = router({
   auth: router({
+    // トークン検証エンドポイント
     verifyToken: publicProcedure
       .input(z.object({
         token: z.string(),
@@ -22,7 +23,7 @@ export const appRouter = router({
 
   user: router({
     // 認証が必要なエンドポイント
-    getProfile: protectedProcedure.query(async ({ ctx }) => {
+    getUserInfo: protectedProcedure.query(async ({ ctx }) => {
       return {
         userId: ctx.user.sub,
         username: ctx.user.username,
@@ -30,14 +31,6 @@ export const appRouter = router({
       };
     }),
 
-    // 従来の互換性のためのエンドポイント
-    getUserInfo: protectedProcedure.query(async ({ ctx }) => {
-      return {
-        user: ctx.user.username,
-        userId: ctx.user.sub,
-        payload: ctx.user,
-      };
-    }),
   }),
 });
 

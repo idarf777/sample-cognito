@@ -30,7 +30,7 @@ function MyPage() {
       const session = await fetchAuthSession();
 
       // バックエンドから検証済みプロフィールを取得
-      const backendProfile = await trpcClient.user.getProfile.query();
+      const backendProfile = await trpcClient.user.getUserInfo.query();
 
       setProfile({
         userId: user.userId,

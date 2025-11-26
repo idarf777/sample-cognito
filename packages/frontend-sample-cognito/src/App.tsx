@@ -20,11 +20,10 @@ function AppContent() {
   const location = useLocation();
 
   useEffect(() => {
-
     updateAuthState().then(() => {});
 
     // Amplifyの認証イベントをリッスン
-    const hubListener = Hub.listen('auth', ({ payload }) => {
+    const dettachHubListener = Hub.listen('auth', ({ payload }) => {
       switch (payload.event) {  
         case 'signInWithRedirect':
           console.log('サインイン成功');
@@ -38,8 +37,7 @@ function AppContent() {
           break;
       }
     });
-
-    return () => hubListener();
+    return () => dettachHubListener();
   }, []);
 
   async function updateAuthState() {
@@ -87,7 +85,7 @@ function AppContent() {
 
       // バックエンドからプロフィールを取得（トークン検証を含む）
       try {
-        const profile = await trpcClient.user.getProfile.query();
+        const profile = await trpcClient.user.getUserInfo.query();
         console.log('プロフィール:', profile);
       } catch (error) {
         console.error('プロフィール取得エラー:', error);
