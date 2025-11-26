@@ -46,3 +46,6 @@ amplify/.temp#
 
 # Claude files
 .claude
+
+# serena
+.serena

@@ -74,7 +74,7 @@ bun install
      - ☑ ALLOW_REFRESH_TOKEN_AUTH
      - ☑ ALLOW_USER_SRP_AUTH
    - **OAuth 2.0 settings**:
-     - **Allowed callback URLs**: `http://localhost:3000`
+     - **Allowed callback URLs**: `http://localhost:3000/mypage`
      - **Allowed sign-out URLs**: `http://localhost:3000`
      - **OAuth scopes**: `openid`, `email`, `profile`
      - **OAuth grant types**: Authorization code grant
@@ -141,7 +141,7 @@ cp .env.example .env
 COGNITO_USER_POOL_ID=us-east-1_XXXXXXXXX
 COGNITO_CLIENT_ID=your-app-client-id
 COGNITO_DOMAIN=your-domain-prefix.auth.us-east-1.amazoncognito.com
-COGNITO_REDIRECT_SIGN_IN=http://localhost:3000
+COGNITO_REDIRECT_SIGN_IN=http://localhost:3000/mypage
 COGNITO_REDIRECT_SIGN_OUT=http://localhost:3000
 ```
 
@@ -169,51 +169,111 @@ bun run build
 - **ランタイム**: Bun
 - **フロントエンド**: HTML + TypeScript + Bun.serve
 - **バックエンド**: Bun + tRPC + AWS Amplify
-- **認証**: AWS Cognito + Google/Facebook/LINE OAuth
+- **認証**: AWS Cognito
 - **モノレポ**: Bun Workspaces
 - **型システム**: TypeScript + tRPC (型安全なAPI通信)
 
-## 📚 API エンドポイント
+## 📚 tRPC API 概要
 
-### tRPC API (http://localhost:3001/trpc)
+### エンドポイント: http://localhost:4000/trpc
 
-- `auth.loginWithProvider({ provider })` - プロバイダー指定ログイン
-  - `provider`: `'Google'` | `'Facebook'` | `'LINE'` | `'Apple'`
-- `auth.sendMagicLink({ email })` - マジックリンク送信
-- `auth.verifyMagicLink({ token })` - マジックリンクトークン検証
-- `auth.logout` - ログアウト
-- `auth.isAuthenticated` - 認証状態チェック
-- `auth.getUserInfo` - ユーザー情報取得
-- `auth.getAccessToken` - アクセストークン取得
+tRPCによる型安全なAPI通信を提供。フロントエンドとバックエンド間で完全な型推論が可能。
+
+#### 認証フロー
+
+```typescript
+// フロントエンド: 自動的にAuthorizationヘッダーを注入
+const client = createTRPCClient({
+  links: [
+    httpBatchLink({
+      url: 'http://localhost:4000/trpc',
+      headers: async () => {
+        const session = await fetchAuthSession();
+        const token = session.tokens?.accessToken?.toString();
+        return token ? { authorization: `Bearer ${token}` } : {};
+      },
+    }),
+  ],
+});
+```
+
+#### 利用可能なAPI
+
+##### 🔓 認証不要 (Public API)
+
+**`auth.test`**
+```typescript
+// GET /trpc/auth.test
+const result = await client.auth.test.query();
+// => { message: "Hello from tRPC!" }
+```
+- 用途: API接続テスト
+- 認証: 不要
+
+##### 🔐 認証必須 (Protected API)
+
+**`user.getUserInfo`**
+```typescript
+// GET /trpc/user.getUserInfo
+const userInfo = await client.user.getUserInfo.query();
+// => { 
+//   userId: "cognito-user-id",
+//   username: "user@example.com",
+//   email: "user@example.com",
+//   scope: "openid email profile"
+// }
+```
+- 用途: ログインユーザーの情報取得
+- 認証: JWT Access Token必須
+- 検証: aws-jwt-verify による Cognito JWT 検証
+
+#### JWT検証の仕組み
+
+バックエンドでは以下のミドルウェアで自動的にJWT検証を実行:
+
+```typescript
+// protectedProcedure: 認証必須のエンドポイント
+const protectedProcedure = publicProcedure.use(async ({ ctx, next }) => {
+  // Authorization ヘッダーから JWT を抽出・検証
+  const payload = await authService.verifyAuthorizationHeader(
+    ctx.authorization
+  );
+  
+  return next({
+    ctx: {
+      userId: payload.sub,
+      username: payload.username || payload['cognito:username'],
+      email: payload.email,
+      scope: payload.scope,
+    },
+  });
+});
+```
+
+#### エラーハンドリング
+
+- **UNAUTHORIZED (401)**: JWT検証失敗、トークン不正
+- **INTERNAL_SERVER_ERROR (500)**: サーバー内部エラー
+
+#### 型安全性
+
+```typescript
+// フロントエンドで自動的に型推論
+import type { AppRouter } from 'backend-sample-cognito';
+
+// ユーザー情報の型が自動推論される
+const userInfo = await client.user.getUserInfo.query();
+//    ^? { userId: string; username: string; email: string; scope: string }
+```
 
 ## 🎯 機能
 
-- ✅ Google OAuthでのサインアップ・サインイン
-- ✅ Facebook Loginでのサインアップ・サインイン
-- ✅ LINE Loginでのサインアップ・サインイン
-- ✅ メールアドレスによるマジックリンク認証
+- ✅ AWS cognitoでのサインアップ・サインイン
 - ✅ フロントエンドとバックエンドの完全分離
 - ✅ tRPCによる型安全なAPI通信
 - ✅ モノレポ構成によるコード共有
 - ✅ Hot Module Replacement (HMR)対応
 - ✅ レスポンシブデザイン
-
-## 🎨 UI
-
-ログイン画面には以下のサインイン方法が表示されます：
-
-### ソーシャルログイン
-- **Googleでサインイン** (青色)
-- **Facebookでサインイン** (青色)
-- **LINEでサインイン** (緑色)
-
-各ボタンをクリックすると、対応するOAuthプロバイダーの認証画面にリダイレクトされます。
-
-### マジックリンク認証
-- メールアドレスを入力して「サインインリンクを送信」ボタンをクリック
-- バックエンドコンソールに認証用URLが表示されます（メール送信はスタブ）
-- 認証用URLにアクセスすると自動的にサインインが完了します
-- トークンの有効期限は15分間です
 
 ## 📝 ライセンス
 

@@ -1,5 +1,5 @@
 ﻿import { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Navigate, useNavigate, useLocation, Outlet, useOutletContext } from 'react-router-dom';
 import { signInWithRedirect, fetchAuthSession, getCurrentUser, signOut } from 'aws-amplify/auth';
 import { Hub } from 'aws-amplify/utils';
 import { configureAmplify } from './config/amplify';
@@ -12,7 +12,14 @@ import MyPage from './components/MyPage';
 // Amplifyの設定を初期化
 configureAmplify();
 
-function AppContent() {
+type AuthContext = {
+  isAuthenticated: boolean;
+  userName: string;
+  handleLogout: () => Promise<void>;
+  navigate: (path: string) => void;
+};
+
+function Root() {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userName, setUserName] = useState<string>('ユーザー');
@@ -116,46 +123,91 @@ function AppContent() {
 
   return (
     <div id="app">
-      <Routes>
-        <Route path="/login" element={
-          isAuthenticated ? (
-            <Navigate to="/main" replace />
-          ) : (
-            <LoginSection onLoginClicked={() => signInWithRedirect()} />
-          )
-        } />
-        <Route path="/main" element={
-          isAuthenticated ? (
-            <MainSection 
-              userName={userName} 
-              onLogout={handleLogout}
-              onNavigateToMyPage={() => navigate('/mypage')}
-            />
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        } />
-        <Route path="/mypage" element={
-          isAuthenticated ? (
-            <MyPage />
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        } />
-        <Route path="/" element={
-          <Navigate to={isAuthenticated ? "/main" : "/login"} replace />
-        } />
-      </Routes>
+      <Outlet context={{ isAuthenticated, userName, handleLogout, navigate }} />
     </div>
   );
 }
 
-function App() {
+function LoginPage() {
+  const { isAuthenticated } = useOutletContext<AuthContext>();
+  
+  if (isAuthenticated) {
+    return <Navigate to="/main" replace />;
+  }
+  
+  return <LoginSection onLoginClicked={() => signInWithRedirect()} />;
+}
+
+function MainPage() {
+  const { isAuthenticated, userName, handleLogout, navigate } = useOutletContext<AuthContext>();
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  
   return (
-    <Router>
-      <AppContent />
-    </Router>
+    <MainSection 
+      userName={userName} 
+      onLogout={handleLogout}
+      onNavigateToMyPage={() => navigate('/mypage')}
+    />
   );
+}
+
+function MyPageRoute() {
+  const { isAuthenticated } = useOutletContext<AuthContext>();
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  return <MyPage />;
+}
+
+function IndexPage() {
+  const { isAuthenticated } = useOutletContext<AuthContext>();
+  return <Navigate to={isAuthenticated ? "/main" : "/login"} replace />;
+}
+
+const router = createBrowserRouter(
+  [
+    {
+      path: '/',
+      element: <Root />,
+      children: [
+        {
+          index: true,
+          element: <IndexPage />,
+        },
+        {
+          path: 'login',
+          element: <LoginPage />,
+        },
+        {
+          path: 'main',
+          element: <MainPage />,
+        },
+        {
+          path: 'mypage',
+          element: <MyPageRoute />,
+        },
+      ],
+    },
+  ],
+  {
+    future: {
+      v7_startTransition: true,
+      v7_relativeSplatPath: true,
+      v7_fetcherPersist: true,
+      v7_normalizeFormMethod: true,
+      v7_partialHydration: true,
+      v7_skipActionErrorRevalidation: true,
+    },
+  }
+);
+
+function App() {
+  return <RouterProvider router={router} />;
 }
 
 export default App;
