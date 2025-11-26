@@ -9,11 +9,11 @@ export function configureAmplify() {
         loginWith: {
           oauth: {
             domain: import.meta.env.VITE_COGNITO_DOMAIN || '',
-            scopes: ['openid', 'email', 'profile'],
-            redirectSignIn: [import.meta.env.VITE_COGNITO_REDIRECT_SIGN_IN || 'http://localhost:3000'],
+            scopes: ['openid', 'email'],
+            redirectSignIn: [import.meta.env.VITE_COGNITO_REDIRECT_SIGN_IN || 'http://localhost:3000/mypage'],
             redirectSignOut: [import.meta.env.VITE_COGNITO_REDIRECT_SIGN_OUT || 'http://localhost:3000'],
             responseType: 'code',
-            providers : ['Google', 'Facebook', 'Amazon'],
+            providers : ['Google'],// 'Facebook', 'Amazon'],
           }
         }
       }

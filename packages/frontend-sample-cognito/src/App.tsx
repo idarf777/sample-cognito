@@ -1,4 +1,5 @@
 ﻿import { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { signInWithRedirect, fetchAuthSession, getCurrentUser, signOut } from 'aws-amplify/auth';
 import { Hub } from 'aws-amplify/utils';
 import { configureAmplify } from './config/amplify';
@@ -6,27 +7,34 @@ import { trpcClient } from './trpc-client';
 import LoadingSection from './components/LoadingSection';
 import LoginSection from './components/LoginSection';
 import MainSection from './components/MainSection';
+import MyPage from './components/MyPage';
 
 // Amplifyの設定を初期化
 configureAmplify();
 
-function App() {
-  const [section, setSection] = useState<'loading' | 'login' | 'main'>('loading');
+function AppContent() {
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userName, setUserName] = useState<string>('ユーザー');
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    init().then(() => {});
+
+    updateAuthState().then(() => {});
 
     // Amplifyの認証イベントをリッスン
     const hubListener = Hub.listen('auth', ({ payload }) => {
-      switch (payload.event) {
+      switch (payload.event) {  
         case 'signInWithRedirect':
           console.log('サインイン成功');
-          init();
+          updateAuthState().then(() => {});
           break;
         case 'signInWithRedirect_failure':
           console.error('サインイン失敗', payload.data);
-          setSection('login');
+          setIsLoading(false);
+          setIsAuthenticated(false);
+          navigate('/login');
           break;
       }
     });
@@ -34,8 +42,8 @@ function App() {
     return () => hubListener();
   }, []);
 
-  async function init() {
-    setSection('loading');
+  async function updateAuthState() {
+    setIsLoading(true);
 
     try {
       // Amplifyで認証状態を確認
@@ -44,11 +52,23 @@ function App() {
       
       // ユーザー情報を取得
       await loadUserInfo();
-      setSection('main');
+      setIsAuthenticated(true);
+      setIsLoading(false);
+      
+      // ログイン成功後、元のページか/mainにリダイレクト
+      if (location.pathname === '/login' || location.pathname === '/') {
+        navigate('/main');
+      }
     } catch (error) {
       // 認証されていない
       console.log('未認証');
-      setSection('login');
+      setIsAuthenticated(false);
+      setIsLoading(false);
+      
+      // 未認証の場合は/loginにリダイレクト
+      if (location.pathname !== '/login') {
+        navigate('/login');
+      }
     }
   }
 
@@ -80,28 +100,63 @@ function App() {
 
   async function handleLogout() {
     try {
-      setSection('loading');
+      setIsLoading(true);
       await signOut();
-      setSection('login');
+      setIsAuthenticated(false);
+      setIsLoading(false);
+      navigate('/login');
     } catch (error) {
       console.error('ログアウトエラー:', error);
       alert('ログアウトに失敗しました。');
-      setSection('main');
+      setIsLoading(false);
     }
+  }
+
+  if (isLoading) {
+    return <LoadingSection />;
   }
 
   return (
     <div id="app">
-      {section === 'loading' && <LoadingSection />}
-      {section === 'login' && (
-        <LoginSection
-          onLoginClicked={() => signInWithRedirect()}
-        />
-      )}
-      {section === 'main' && (
-        <MainSection userName={userName} onLogout={handleLogout} />
-      )}
+      <Routes>
+        <Route path="/login" element={
+          isAuthenticated ? (
+            <Navigate to="/main" replace />
+          ) : (
+            <LoginSection onLoginClicked={() => signInWithRedirect()} />
+          )
+        } />
+        <Route path="/main" element={
+          isAuthenticated ? (
+            <MainSection 
+              userName={userName} 
+              onLogout={handleLogout}
+              onNavigateToMyPage={() => navigate('/mypage')}
+            />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } />
+        <Route path="/mypage" element={
+          isAuthenticated ? (
+            <MyPage />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } />
+        <Route path="/" element={
+          <Navigate to={isAuthenticated ? "/main" : "/login"} replace />
+        } />
+      </Routes>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <AppContent />
+    </Router>
   );
 }
 

@@ -283,6 +283,175 @@ body {
   font-size: 18px;
 }
 
+/* マイページのスタイル */
+.mypage-container {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.mypage-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 30px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.mypage-header h1 {
+  font-size: 28px;
+  flex: 1;
+  text-align: center;
+}
+
+.back-btn {
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  border: 2px solid white;
+  background: transparent;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.back-btn:hover {
+  background: white;
+  color: #667eea;
+}
+
+.mypage-content {
+  padding: 40px;
+}
+
+.profile-section,
+.actions-section {
+  margin-bottom: 40px;
+}
+
+.profile-section h2,
+.actions-section h2 {
+  color: #333;
+  font-size: 22px;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #667eea;
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.info-item {
+  display: flex;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  align-items: center;
+}
+
+.info-item label {
+  font-weight: 600;
+  color: #555;
+  min-width: 150px;
+}
+
+.info-item span {
+  color: #333;
+  flex: 1;
+  word-break: break-all;
+}
+
+.actions {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.refresh-btn,
+.nav-button {
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  border: 2px solid #667eea;
+  background: white;
+  color: #667eea;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.refresh-btn:hover,
+.nav-button:hover {
+  background: #667eea;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
+}
+
+.mypage-loading,
+.mypage-error {
+  text-align: center;
+  padding: 60px 40px;
+}
+
+.mypage-error h2 {
+  color: #dc3545;
+  margin-bottom: 15px;
+}
+
+.mypage-error p {
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.error-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.mypage-error button {
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  background: #667eea;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.mypage-error button:hover {
+  background: #5568d3;
+  transform: translateY(-2px);
+}
+
+#mypage-btn {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 2px solid white;
+  padding: 10px 25px;
+  font-size: 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 600;
+}
+
+#mypage-btn:hover {
+  background: white;
+  color: #667eea;
+}
+
 @media (max-width: 600px) {
   #app {
     padding: 10px;
@@ -297,13 +466,25 @@ body {
     max-width: 100%;
   }
 
-  .header {
+  .header,
+  .mypage-header {
     flex-direction: column;
     gap: 20px;
     text-align: center;
   }
 
-  .content {
+  .content,
+  .mypage-content {
     padding: 20px;
+  }
+
+  .info-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+
+  .info-item label {
+    min-width: auto;
   }
 }
