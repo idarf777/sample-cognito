@@ -20,7 +20,6 @@ export const trpcClient = createTRPCClient<AppRouter>({
           }
         } catch (error) {
           // 認証されていない場合はヘッダーなし
-          console.log('No auth token available');
         }
         return {};
       },

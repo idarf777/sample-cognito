@@ -1,4 +1,21 @@
 import { CognitoJwtVerifier } from 'aws-jwt-verify';
+import type { CognitoJwtVerifierSingleUserPool } from 'aws-jwt-verify/cognito-verifier';
+
+export interface TokenPayload {
+  sub: string;
+  email?: string;
+  email_verified?: boolean;
+  username?: string;
+  scope?: string;
+  exp: number;
+  iat: number;
+}
+
+export interface VerifierParams {
+  userPoolId: string;
+  tokenUse: 'access' | 'id';
+  clientId: string;
+}
 
 // JWTトークン検証用のVerifierを作成
 const createAccessTokenVerifier = () => {
@@ -19,25 +36,22 @@ const createIdTokenVerifier = () => {
 
 export interface TokenVerificationResult {
   valid: boolean;
-  payload?: any;
+  payload?: TokenPayload;
   error?: string;
 }
 
 export class AmplifyAuthService {
-  /**
-   * アクセストークンを検証
-   */
-  async verifyAccessToken(token: string): Promise<TokenVerificationResult> {
+  async verifyToken(token: string, verifier: CognitoJwtVerifierSingleUserPool<VerifierParams> ): Promise<TokenVerificationResult> {
     try {
-      const verifier = createAccessTokenVerifier();
       const payload = await verifier.verify(token);
-      
       return {
         valid: true,
         payload: {
           sub: payload.sub,
-          username: payload.username,
-          scope: payload.scope,
+          email: payload.email as string | undefined,
+          email_verified: payload.email_verified as boolean | undefined,
+          username: payload.username as string | undefined,
+          scope: payload.scope as string | undefined,
           exp: payload.exp,
           iat: payload.iat,
         }
@@ -52,31 +66,17 @@ export class AmplifyAuthService {
   }
 
   /**
+   * アクセストークンを検証
+   */
+  async verifyAccessToken(token: string): Promise<TokenVerificationResult> {
+    return await this.verifyToken(token, createAccessTokenVerifier());
+  }
+
+  /**
    * IDトークンを検証
    */
   async verifyIdToken(token: string): Promise<TokenVerificationResult> {
-    try {
-      const verifier = createIdTokenVerifier();
-      const payload = await verifier.verify(token);
-      
-      return {
-        valid: true,
-        payload: {
-          sub: payload.sub,
-          email: payload.email,
-          email_verified: payload.email_verified,
-          name: payload.name,
-          exp: payload.exp,
-          iat: payload.iat,
-        }
-      };
-    } catch (error) {
-      console.error('IDトークン検証エラー:', error);
-      return {
-        valid: false,
-        error: error instanceof Error ? error.message : 'トークン検証に失敗しました'
-      };
-    }
+    return await this.verifyToken(token, createIdTokenVerifier());
   }
 
   /**
