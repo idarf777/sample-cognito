@@ -7,7 +7,6 @@ interface UserProfile {
   userId: string;
   username: string;
   email?: string;
-  scope?: string;
 }
 
 function MyPage() {
@@ -34,9 +33,8 @@ function MyPage() {
 
       setProfile({
         userId: user.userId,
-        username: user.username || backendProfile.username,
+        username: user.username || backendProfile.username || "",
         email: session.tokens?.idToken?.payload.email as string | undefined,
-        scope: backendProfile.scope,
       });
     } catch (error) {
       console.error('プロフィール取得エラー:', error);
@@ -109,12 +107,6 @@ function MyPage() {
               <div className="info-item">
                 <label>メールアドレス:</label>
                 <span>{profile.email}</span>
-              </div>
-            )}
-            {profile?.scope && (
-              <div className="info-item">
-                <label>スコープ:</label>
-                <span>{profile.scope}</span>
               </div>
             )}
           </div>

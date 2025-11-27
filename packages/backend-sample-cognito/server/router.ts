@@ -1,4 +1,4 @@
-import { router, publicProcedure, protectedProcedure } from './trpc';
+import { router, publicProcedure, authorizedProcedure } from './trpc';
 import { AmplifyAuthService } from './auth-service';
 import { z } from 'zod';
 
@@ -23,7 +23,7 @@ export const appRouter = router({
 
   user: router({
     // 認証が必要なエンドポイント
-    getUserInfo: protectedProcedure.query(async ({ ctx }) => {
+    getUserInfo: authorizedProcedure.query(async ({ ctx }) => {
       return {
         userId: ctx.user.sub,
         username: ctx.user.username,

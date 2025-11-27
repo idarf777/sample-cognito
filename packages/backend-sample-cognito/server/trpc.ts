@@ -11,7 +11,7 @@ interface Context {
   user?: TokenPayload;
 }
 
-interface ProtectedContext extends Context {
+interface AuthorizedContext extends Context {
   user: TokenPayload;
 }
 
@@ -23,7 +23,7 @@ export const router = t.router;
 export const publicProcedure = t.procedure;
 
 // 認証が必要なプロシージャ
-export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
+export const authorizedProcedure = t.procedure.use(async ({ ctx, next }) => {
   const result = await authService.verifyAuthorizationHeader(ctx.authHeader || undefined);
   
   if (!result.valid || !result.payload) {
@@ -37,6 +37,6 @@ export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
     ctx: {
       ...ctx,
       user: result.payload,
-    } as ProtectedContext,
+    } as AuthorizedContext,
   });
 });
